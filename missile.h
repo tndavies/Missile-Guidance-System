@@ -9,6 +9,7 @@ class Missile
 public:
 	Missile(glm::vec2 target, float speed);
 
+	glm::vec2 velocity() const { return m_CurrLOS * m_Speed; }
 	void tick(const Target& target, float dt);
 	void draw(SDL_Renderer* r);
 

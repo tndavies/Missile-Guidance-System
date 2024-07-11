@@ -33,7 +33,7 @@ void Missile::tick(const Target& target, float dt)
 	m_prevLOSA = currLOSA;
 	
 	// 3) Find missile velocity upon target
-	//auto vRel = velocity() - target.velocity();
+	auto vRel = velocity() - target.velocity();
 	
 	
 	// 4) Use PN formula to find correction acceleration needed.
