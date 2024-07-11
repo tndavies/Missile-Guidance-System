@@ -2,7 +2,20 @@
 #include <SDL/SDL.h>
 #include <target.h>
 #include <gs.h>
-#include <vec2.h>
+#include <glm/glm.hpp>
+#include <coords.h>
+
+glm::vec2 SDLtoGS(glm::vec2 sdl) {
+    const auto GSx = sdl.x - FrameWidth * 0.5f;
+    const auto GSy = FrameHeight - sdl.y;
+    return glm::vec2(GSx, GSy);
+}
+
+glm::vec2 GStoSDL(glm::vec2 gs) {
+    const auto SDLx = gs.x + FrameWidth * 0.5f;
+    const auto SDLy = FrameHeight - gs.y;
+    return glm::vec2(SDLx, SDLy);
+}
 
 int main(int argc, char* argv[]) 
 {
@@ -20,21 +33,24 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer) {
+    SDL_Renderer* r = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!r) {
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
     }
 
-    const float GS_Size = 25.0f;
-    GuidanceSystem gs(0.5f * (FramebufferWidth - GS_Size), FramebufferHeight - GS_Size - 2, 
-        GS_Size, 600.0f, 60);
-    
-    Target target(5, 5, 25, 0.025f);
+    GuidanceSystem gs(0.5f * FramebufferWidth, FramebufferHeight, 600.0f, 60);
+
+    Target target(5, 5, 8, 0.025f);
 
     SDL_Event e;
     bool quit = false;
+    bool tick_simulation = true;
+    auto t0 = SDL_GetTicks();
+    
+    const auto msDeltaTime = 16.0f;
+
     while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
@@ -42,70 +58,34 @@ int main(int argc, char* argv[])
             }
         }
     
-        // simulate ...
-        int x, y;
-        SDL_GetMouseState(&x, &y);
+        if (tick_simulation) {
+            const auto dt = msDeltaTime / 1000.0f; // time-step in seconds.
+            
+            int x, y;
+            SDL_GetMouseState(&x, &y);
 
-        target.tick(x, y);
-        gs.tick(target);
+            target.tick(x, y, dt);
+            gs.tick(target, dt);
+
+            tick_simulation = false;
+        }
 
         // Rendering ...
+        SDL_SetRenderDrawColor(r, 0, 0, 0, 0xff);
+        SDL_RenderClear(r);
+        target.draw(r);
+        gs.draw(r);
 
-        // Clear framebuffer
-        SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
-        SDL_RenderClear(renderer);
+        SDL_RenderPresent(r);
 
-        // Line from GS to target
-        {
-            const auto target_size = target.getSize();
-            const auto gs_size = gs.getSize();
-
-            SDL_SetRenderDrawColor(renderer, 0xff, 0, 0, 0xff);
-            //SDL_RenderDrawLine(renderer, gs.getX() + 0.5f * gs_size, gs.getY(),
-                //target.getX() + 0.5f * target_size, target.getY() + target_size);
+        const auto dt = SDL_GetTicks() - t0;
+        if (dt >= msDeltaTime) {
+            t0 = SDL_GetTicks();
+            tick_simulation = true;
         }
-
-        // Target object
-        {
-            const auto Size = target.getSize();
-            SDL_Rect visual = { target.getX() - 0.5f * Size, target.getY() - 0.5f * Size, Size, Size };
-
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0xff, 0xff);
-            SDL_RenderFillRect(renderer, &visual);
-        }
-
-        // Guidance System Object
-        {
-            const auto Size = gs.getSize();
-            SDL_Rect visual = { gs.getX() - 0.5f*Size, gs.getY() - 0.5f * Size, Size, Size};
-
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xff);
-            SDL_RenderFillRect(renderer, &visual);
-
-            SDL_SetRenderDrawColor(renderer, 50, 50, 50, 0xff);
-
-            const auto Gx = gs.getX();
-            const auto Gy = gs.getY();
-            const auto A = gs.getA();
-            const auto B = gs.getB();
-
-            SDL_RenderDrawLineF(renderer, Gx, Gy, A.x, A.y);
-            SDL_RenderDrawLineF(renderer, Gx, Gy, B.x, B.y);
-            SDL_RenderDrawLineF(renderer, A.x, A.y, B.x, B.y);
-
-            const Missile* missile = gs.getMissile();
-            if (missile) {
-                const auto mpos = missile->getPos();
-                SDL_FRect visual{ mpos.x, mpos.y, 5, 5 };
-                SDL_SetRenderDrawColor(renderer, 0xff, 0, 0, 0xff);
-                SDL_RenderFillRectF(renderer, &visual);
-            }
-        }
-
-        SDL_RenderPresent(renderer);
     }
 
-    SDL_DestroyRenderer(renderer);
+    SDL_DestroyRenderer(r);
     SDL_DestroyWindow(window);
     SDL_Quit();
 

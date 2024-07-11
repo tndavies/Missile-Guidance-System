@@ -1,11 +1,11 @@
 #include "gs.h"
 #include <cmath>
-#include <iostream>
+#include <coords.h>
 
 #define Radians(x) (0.01745329251994329576924 * x) 
 
-GuidanceSystem::GuidanceSystem(float x, float y, float size, float range, float fov) 
-	: m_X(x), m_Y(y), m_Size(size), m_Range(range), m_FOV(fov), m_ThreatDetected(false)
+GuidanceSystem::GuidanceSystem(float x, float y, float range, float fov) 
+	: m_X(x), m_Y(y), m_Range(range), m_FOV(fov), m_ThreatDetected(false)
 {
 	const float alpha = 0.5f * Radians(m_FOV);
 	const float dx = m_Range * std::sinf(alpha);
@@ -18,63 +18,64 @@ GuidanceSystem::GuidanceSystem(float x, float y, float size, float range, float 
 	m_FrustumB.y = m_Y - dy;
 }
 
-void GuidanceSystem::tick(const Target& target)
+void GuidanceSystem::draw(SDL_Renderer* r) 
+{
+	SDL_Rect visual = { m_X - 0.5f * m_Size, m_Y - m_Size, m_Size, m_Size };
+	SDL_SetRenderDrawColor(r, 100, 100, 100, 0xff);
+	SDL_RenderDrawRect(r, &visual);
+
+	const auto A = m_FrustumA;
+	const auto B = m_FrustumB;
+	
+	SDL_SetRenderDrawColor(r, 0xff, 0xff, 0xff, 0xff);
+	SDL_RenderDrawLineF(r, m_X, m_Y, A.x, A.y);
+	SDL_RenderDrawLineF(r, m_X, m_Y, B.x, B.y);
+	SDL_RenderDrawLineF(r, A.x, A.y, B.x, B.y);
+
+	if (m_ActiveMissile) m_ActiveMissile->draw(r);
+}
+
+void GuidanceSystem::tick(const Target& target, float dt)
 {
 	bool visible = TargetVisible(target.getX(), target.getY());
 	if (visible && !m_ThreatDetected) {
 		m_ThreatDetected = true;
-
-		const auto coordRatio = (target.getX() - m_X) / (target.getY() - m_Y);
-		const float launchAngle = std::atanf(coordRatio);
-
-		std::cout << launchAngle * 57.3f << std::endl;
-
-		const float launchSpeed = 0.05f;
-
-		m_ActiveMissile = new Missile(m_X, m_Y, launchAngle, launchSpeed);
+		
+		const auto tpos = SDLtoGS(glm::vec2(target.getX(), target.getY()));
+		m_ActiveMissile = new Missile(tpos, 0.05f);
 	}
 	else if (m_ThreatDetected && !visible) {
 		m_ThreatDetected = false;
 	}
 
-	if (m_ActiveMissile) m_ActiveMissile->tick();
+	if (m_ActiveMissile) {
+		const auto tpos = SDLtoGS(glm::vec2(target.getX(), target.getY()));
+		m_ActiveMissile->tick(tpos, dt);
+	}
 }
 
 // Uses barycentric coordinates to test if the target is
 // within the view frustum of the guidance system's sensors.
-bool GuidanceSystem::TargetVisible(float tx, float ty) 
+bool GuidanceSystem::TargetVisible(float tx, float ty)
 {
-	vec2 P (tx, ty);
-	vec2 G (m_X, m_Y);
-	vec2 A = m_FrustumA;
-	vec2 B = m_FrustumB;
+	glm::vec2 P(tx, ty);
+	glm::vec2 G(m_X, m_Y);
+	glm::vec2 A = m_FrustumA;
+	glm::vec2 B = m_FrustumB;
 
-	vec2 v0 = G - A;
-	vec2 v1 = B - A;
-	vec2 v2 = P - A;
+	glm::vec2 v0 = G - A;
+	glm::vec2 v1 = B - A;
+	glm::vec2 v2 = P - A;
 
-	auto d00 = vec2::dot(v0, v0);
-	auto d01 = vec2::dot(v0, v1);
-	auto d02 = vec2::dot(v0, v2);
-	auto d11 = vec2::dot(v1, v1);
-	auto d12 = vec2::dot(v1, v2);
+	auto d00 = glm::dot(v0, v0);
+	auto d01 = glm::dot(v0, v1);
+	auto d02 = glm::dot(v0, v2);
+	auto d11 = glm::dot(v1, v1);
+	auto d12 = glm::dot(v1, v2);
 
 	float invDenom = 1 / (d00 * d11 - d01 * d01);
 	float u = (d11 * d02 - d01 * d12) * invDenom;
 	float v = (d00 * d12 - d01 * d02) * invDenom;
 
 	return (u >= 0.0f) && (v >= 0.0f) && (u + v <= 1.0f);
-}
-
-Missile::Missile(float x, float y, float radLaunchAngle, float speed)
-	: m_Pos(x, y)
-{
-	const auto radTheta = radLaunchAngle;
-	m_InitialVel.x = speed * std::cosf(radTheta);
-	m_InitialVel.y = -speed * std::sinf(radTheta);
-}
-
-void Missile::tick()
-{
-	m_Pos = m_Pos + m_InitialVel;
 }

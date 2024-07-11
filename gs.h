@@ -1,28 +1,17 @@
 #pragma once
 
+#include <SDL/SDL.h>
 #include <target.h>
-#include <vec2.h>
-
-class Missile {
-public:
-	Missile(float x, float y, float radLaunchAngle, float speed);
-	~Missile() {}
-
-	auto getPos() const { return m_Pos; }
-
-	void tick();
-
-private:
-	vec2 m_Pos;
-	vec2 m_InitialVel;
-};
+#include <glm/glm.hpp>
+#include <cmath>
+#include <missile.h>
 
 class GuidanceSystem {
 public:
-	GuidanceSystem(float x, float y, float size, float range, float fov);
+	GuidanceSystem(float x, float y, float range, float fov);
 	~GuidanceSystem() {}
 
-	void tick(const Target& target);
+	void tick(const Target& target, float dt);
 
 	auto getSize() const { return m_Size; }
 	auto getX() const { return m_X; }
@@ -33,17 +22,20 @@ public:
 	auto getB() const { return m_FrustumB; }
 	auto getMissile() const { return m_ActiveMissile; }
 
+	void draw(SDL_Renderer* r);
 	bool TargetVisible(float tx, float ty);
 
 private:
-	float m_X, m_Y;
-	float m_Size;
+	const float m_Size = 15.0f;
 
+	// in SDL coords.
+	float m_X, m_Y;
+	glm::vec2 m_FrustumA;
+	glm::vec2 m_FrustumB;
+	
 	float m_Range;
 	float m_FOV;
 
-	vec2 m_FrustumA;
-	vec2 m_FrustumB;
 
 	bool m_ThreatDetected;
 

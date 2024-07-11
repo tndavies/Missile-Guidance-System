@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SDL/SDL.h>
+
 class Target {
 public:
 	Target(float x, float y, float size, float speed_x) :
@@ -7,7 +9,8 @@ public:
 	
 	~Target() {}
 
-	void tick(float x, float y);
+	void tick(float x, float y, float dt);
+	void draw(SDL_Renderer* r);
 
 	auto getSize() const { return m_Size; }
 	auto getX() const { return m_X; }
