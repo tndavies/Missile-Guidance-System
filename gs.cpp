@@ -21,17 +21,18 @@ GuidanceSystem::GuidanceSystem(float x, float y, float range, float fov)
 
 void GuidanceSystem::draw(SDL_Renderer* r) 
 {
-	SDL_Rect visual = { m_X - 0.5f * m_Size, m_Y - m_Size, m_Size, m_Size };
-	SDL_SetRenderDrawColor(r, 100, 100, 100, 0xff);
-	SDL_RenderDrawRect(r, &visual);
-
 	const auto A = m_FrustumA;
 	const auto B = m_FrustumB;
 	
-	SDL_SetRenderDrawColor(r, 0, 0, 0, 0xff);
+	if (m_ThreatDetected) SDL_SetRenderDrawColor(r, 200, 200, 0, 0xff);
+	else SDL_SetRenderDrawColor(r, 0, 0, 0, 0xff);
 	SDL_RenderDrawLineF(r, m_X, m_Y, A.x, A.y);
 	SDL_RenderDrawLineF(r, m_X, m_Y, B.x, B.y);
 	SDL_RenderDrawLineF(r, A.x, A.y, B.x, B.y);
+
+	SDL_Rect visual = { m_X - 0.5f * m_Size, m_Y - m_Size, m_Size, m_Size };
+	SDL_SetRenderDrawColor(r, 0, 0, 0, 0xff);
+	SDL_RenderFillRect(r, &visual);
 
 	if (m_ActiveMissile) m_ActiveMissile->draw(r);
 }
@@ -50,14 +51,13 @@ void GuidanceSystem::tick(Target& target, float dt)
 	if (m_ActiveMissile) {
 		m_ActiveMissile->tick(target, dt);
 
-		//const auto tpos = SDLtoGS(target.getPos());
-		//const auto missileLOS = m_ActiveMissile->calcLOS(tpos);
-		//std::cout << glm::length(missileLOS) << std::endl;
-		//if (glm::length(missileLOS) <= target.getSize()) { // missile hit!
-		//	delete m_ActiveMissile;
-		//	m_ThreatDetected = false;
-		//	target.reset();
-		//}
+		const auto tpos = SDLtoGS(target.getPos());
+		const auto missileLOS = m_ActiveMissile->calcLOS(tpos);
+		if (glm::length(missileLOS) <= target.getSize()) { // missile hit!
+			delete m_ActiveMissile;
+			m_ThreatDetected = false;
+			target.reset();
+		}
 	}
 }
 
