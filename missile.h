@@ -1,7 +1,7 @@
 #pragma once
-
-#include <SDL/SDL.h>
 #include <glm/glm.hpp>
+#include <SDL/SDL.h>
+#include <array>
 
 class Missile
 {
@@ -16,5 +16,5 @@ private:
 	glm::vec2 m_InitialLOS;
 	glm::vec2 m_CurrLOS;
 	float m_Speed;
-
+	float m_prevLOSA;
 };
