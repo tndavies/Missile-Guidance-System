@@ -7,24 +7,19 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/vector_angle.hpp>
 
-glm::vec2 Missile::calcLOS(glm::vec2 target) {
-	return target - m_Pos;
-}
-
-glm::vec2 Missile::calcLOSnorm(glm::vec2 target) {
-	return glm::normalize(target - m_Pos);
-}
+glm::vec2 Missile::calcLOS(glm::vec2 target) { return target - m_Pos; }
+glm::vec2 Missile::calcLOSnorm(glm::vec2 target) { return glm::normalize(target - m_Pos); }
 
 Missile::Missile(glm::vec2 target, float speed) :
 	m_Pos(0), m_Acc(0), m_prevLOSAngle(0.0f)
 {
-	m_LOS = calcLOSnorm(target);
-	m_Vel = m_LOS * speed;
+	m_InitialLOS = calcLOSnorm(target);
+	m_Vel = m_InitialLOS * speed;
 }
 
 void Missile::tick(const Target& target, float dt)
 {
-	// -- Proportional Navigation Algorithm --
+	// -- Proportional Navigation Algorithm -- //
 	
 	// 1) Calc angle between reference line & target (LOS angle).
 	const auto tpos = SDLtoGS(target.getPos());
@@ -40,7 +35,7 @@ void Missile::tick(const Target& target, float dt)
 	auto closingVel = glm::dot(m_LOS, velDelta);
 
 	// 4) Use PN formula to find correction acceleration needed.
-	const auto Aggresiveness = 0.05f;
+	const auto Aggresiveness = 1.0f;
 	auto corrAccel = Aggresiveness * closingVel * rocLOSA;
 	
 	auto accUnitVec = glm::cross(glm::vec3(m_Vel.x, m_Vel.y, 0.0f), { 0,0,1 });

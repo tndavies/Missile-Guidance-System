@@ -16,9 +16,7 @@ public:
 	auto getSize() const { return m_Size; }
 	auto getPos() const { return m_Pos; }
 
-	void reset() {
-		m_Pos = m_ResetPos;
-	}
+	void reset() { m_Pos = m_ResetPos; }
 
 private:
 	glm::vec2 m_Pos, m_ResetPos;
