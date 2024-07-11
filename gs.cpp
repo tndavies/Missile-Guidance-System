@@ -37,11 +37,12 @@ void GuidanceSystem::draw(SDL_Renderer* r)
 
 void GuidanceSystem::tick(const Target& target, float dt)
 {
-	bool visible = TargetVisible(target.getX(), target.getY());
+	const auto tpos = target.getPos();
+	bool visible = TargetVisible(tpos.x, tpos.y);
 	if (visible && !m_ThreatDetected) {
 		m_ThreatDetected = true;
 		
-		const auto tpos = SDLtoGS(glm::vec2(target.getX(), target.getY()));
+		const auto tpos = SDLtoGS(target.getPos());
 		m_ActiveMissile = new Missile(tpos, 0.05f);
 	}
 	else if (m_ThreatDetected && !visible) {

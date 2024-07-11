@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
     GuidanceSystem gs(0.5f * FramebufferWidth, FramebufferHeight, 600.0f, 60);
 
-    Target target(5, 5, 8, 0.025f);
+    Target target(glm::vec2(250, 200), 25);
 
     SDL_Event e;
     bool quit = false;
@@ -61,10 +61,7 @@ int main(int argc, char* argv[])
         if (tick_simulation) {
             const auto dt = msDeltaTime / 1000.0f; // time-step in seconds.
             
-            int x, y;
-            SDL_GetMouseState(&x, &y);
-
-            target.tick(x, y, dt);
+            target.tick(dt);
             gs.tick(target, dt);
 
             tick_simulation = false;

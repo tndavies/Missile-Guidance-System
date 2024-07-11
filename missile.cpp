@@ -24,7 +24,7 @@ void Missile::tick(const Target& target, float dt)
 {
 	// Guidance algorithm.
 	// 1) Calc angle between reference line & target (LOS angle).
-	const auto tpos = SDLtoGS(glm::vec2(target.getX(), target.getY()));
+	const auto tpos = SDLtoGS(target.getPos());
 	m_CurrLOS = calc_trajectory(m_Pos, tpos);
 	float currLOSA = glm::angle(m_InitialLOS, m_CurrLOS);
 
