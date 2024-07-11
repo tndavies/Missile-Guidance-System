@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
         }
 
         // Rendering ...
-        SDL_SetRenderDrawColor(r, 0, 0, 0, 0xff);
+        SDL_SetRenderDrawColor(r, 255, 255, 255, 0xff);
         SDL_RenderClear(r);
         target.draw(r);
         gs.draw(r);
