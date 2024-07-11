@@ -35,7 +35,7 @@ void Missile::tick(const Target& target, float dt)
 	auto closingVel = glm::dot(m_LOS, velDelta);
 
 	// 4) Use PN formula to find correction acceleration needed.
-	const auto Aggresiveness = 1.0f;
+	const auto Aggresiveness = 0.01f;
 	auto corrAccel = Aggresiveness * closingVel * rocLOSA;
 	
 	auto accUnitVec = glm::cross(glm::vec3(m_Vel.x, m_Vel.y, 0.0f), { 0,0,1 });

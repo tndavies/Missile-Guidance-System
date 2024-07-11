@@ -2,7 +2,8 @@
 
 void Target::tick(float dt)
 {
-	m_Pos += velocity() * dt;
+	m_Vel += glm::vec2(15.0f, 9.0f) * dt;
+	m_Pos += m_Vel * dt;
 }
 
 void Target::draw(SDL_Renderer* r)

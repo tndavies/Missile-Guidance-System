@@ -44,7 +44,7 @@ void GuidanceSystem::tick(Target& target, float dt)
 		m_ThreatDetected = true;
 		
 		const auto tpos = SDLtoGS(target.getPos());
-		m_ActiveMissile = new Missile(tpos, target.getSpeed() * 1.25f);
+		m_ActiveMissile = new Missile(tpos, target.getSpeed() * 2.5f);
 	}
 
 	if (m_ActiveMissile) {
