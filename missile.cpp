@@ -67,6 +67,6 @@ void Missile::draw(SDL_Renderer* r)
 	SDL_RenderDrawLineF(r, mpos.x, mpos.y, mpos.x + vpos.x, mpos.y - vpos.y);
 
 	const auto apos = m_Acc;
-	SDL_SetRenderDrawColor(r, 255, 0, 0, 0xff);
+	SDL_SetRenderDrawColor(r, 255, 70, 0, 0xff);
 	SDL_RenderDrawLineF(r, mpos.x, mpos.y, mpos.x + apos.x, mpos.y - apos.y);
 }
