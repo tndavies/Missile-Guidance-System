@@ -2,13 +2,14 @@
 #include <glm/glm.hpp>
 #include <SDL/SDL.h>
 #include <array>
+#include <target.h>
 
 class Missile
 {
 public:
 	Missile(glm::vec2 target, float speed);
 
-	void tick(glm::vec2 target_pos, float dt);
+	void tick(const Target& target, float dt);
 	void draw(SDL_Renderer* r);
 
 private:

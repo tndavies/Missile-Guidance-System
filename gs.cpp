@@ -49,8 +49,7 @@ void GuidanceSystem::tick(const Target& target, float dt)
 	}
 
 	if (m_ActiveMissile) {
-		const auto tpos = SDLtoGS(glm::vec2(target.getX(), target.getY()));
-		m_ActiveMissile->tick(tpos, dt);
+		m_ActiveMissile->tick(target, dt);
 	}
 }
 

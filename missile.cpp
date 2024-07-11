@@ -20,13 +20,12 @@ Missile::Missile(glm::vec2 target, float speed) :
 	m_prevLOSA = 0.0f;
 }
 
-void Missile::tick(glm::vec2 target_pos, float dt)
+void Missile::tick(const Target& target, float dt)
 {
-	//m_Pos = m_Pos + getVelocity() * dt;
-
 	// Guidance algorithm.
 	// 1) Calc angle between reference line & target (LOS angle).
-	m_CurrLOS = calc_trajectory(m_Pos, target_pos);
+	const auto tpos = SDLtoGS(glm::vec2(target.getX(), target.getY()));
+	m_CurrLOS = calc_trajectory(m_Pos, tpos);
 	float currLOSA = glm::angle(m_InitialLOS, m_CurrLOS);
 
 	// 2) Calc temporal ROC of LOS angle.
@@ -34,6 +33,9 @@ void Missile::tick(glm::vec2 target_pos, float dt)
 	m_prevLOSA = currLOSA;
 	
 	// 3) Find missile velocity upon target
+	//auto vRel = velocity() - target.velocity();
+	
+	
 	// 4) Use PN formula to find correction acceleration needed.
 	// 5) Adjust missile velocity accordingly.
 
