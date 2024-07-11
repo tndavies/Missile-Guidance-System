@@ -13,11 +13,14 @@ public:
 	void tick(const Target& target, float dt);
 	void draw(SDL_Renderer* r);
 
+	glm::vec2 calcLOSnorm(glm::vec2 target);
+	glm::vec2 calcLOS(glm::vec2 target);
+
 private:
+
 	glm::vec2 m_Pos;
 	glm::vec2 m_InitialLOS;
-	glm::vec2 m_CurrLOS;
+	glm::vec2 m_LOS;
 	glm::vec2 m_Vel, m_Acc;
-	float m_Speed;
-	float m_prevLOSA;
+	float m_prevLOSAngle;
 };

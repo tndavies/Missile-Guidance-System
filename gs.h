@@ -11,7 +11,7 @@ public:
 	GuidanceSystem(float x, float y, float range, float fov);
 	~GuidanceSystem() {}
 
-	void tick(const Target& target, float dt);
+	void tick(Target& target, float dt);
 
 	auto getSize() const { return m_Size; }
 	auto getX() const { return m_X; }

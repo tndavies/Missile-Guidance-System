@@ -40,9 +40,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    GuidanceSystem gs(0.5f * FramebufferWidth, FramebufferHeight, 800.0f, 90);
+    GuidanceSystem gs(0.5f * FramebufferWidth, FramebufferHeight, 800.0f, 45);
 
-    Target target(glm::vec2(250, 200), 25);
+    Target target(glm::vec2(250, 200), 15);
 
     SDL_Event e;
     bool quit = false;

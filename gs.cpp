@@ -1,6 +1,7 @@
 #include "gs.h"
 #include <cmath>
 #include <coords.h>
+#include <iostream>
 
 #define Radians(x) (0.01745329251994329576924 * x) 
 
@@ -35,7 +36,7 @@ void GuidanceSystem::draw(SDL_Renderer* r)
 	if (m_ActiveMissile) m_ActiveMissile->draw(r);
 }
 
-void GuidanceSystem::tick(const Target& target, float dt)
+void GuidanceSystem::tick(Target& target, float dt)
 {
 	const auto tpos = target.getPos();
 	bool visible = TargetVisible(tpos.x, tpos.y);
@@ -43,14 +44,20 @@ void GuidanceSystem::tick(const Target& target, float dt)
 		m_ThreatDetected = true;
 		
 		const auto tpos = SDLtoGS(target.getPos());
-		m_ActiveMissile = new Missile(tpos, 0.05f);
-	}
-	else if (m_ThreatDetected && !visible) {
-		m_ThreatDetected = false;
+		m_ActiveMissile = new Missile(tpos, 95.0f);
 	}
 
 	if (m_ActiveMissile) {
 		m_ActiveMissile->tick(target, dt);
+
+		//const auto tpos = SDLtoGS(target.getPos());
+		//const auto missileLOS = m_ActiveMissile->calcLOS(tpos);
+		//std::cout << glm::length(missileLOS) << std::endl;
+		//if (glm::length(missileLOS) <= target.getSize()) { // missile hit!
+		//	delete m_ActiveMissile;
+		//	m_ThreatDetected = false;
+		//	target.reset();
+		//}
 	}
 }
 
