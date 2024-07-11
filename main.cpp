@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    GuidanceSystem gs(0.5f * FramebufferWidth, FramebufferHeight, 600.0f, 60);
+    GuidanceSystem gs(0.5f * FramebufferWidth, FramebufferHeight, 800.0f, 90);
 
     Target target(glm::vec2(250, 200), 25);
 

@@ -11,7 +11,7 @@ public:
 	void tick(float dt);
 	void draw(SDL_Renderer* r);
 
-	glm::vec2 velocity() const { return glm::vec2(65.0f,0.0f); }
+	glm::vec2 velocity() const { return glm::vec2(75.0f,0.0f); }
 	auto getSize() const { return m_Size; }
 	auto getPos() const { return m_Pos; }
 

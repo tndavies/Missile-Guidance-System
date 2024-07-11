@@ -19,7 +19,7 @@ Missile::Missile(glm::vec2 target, float speed) :
 	m_CurrLOS = m_InitialLOS;
 	m_prevLOSA = 0.0f;
 	
-	m_Vel = m_InitialLOS * 60.0f;
+	m_Vel = m_InitialLOS * 80.0f;
 	m_Acc = { 0.0f, 0.0f };
 }
 
@@ -40,8 +40,8 @@ void Missile::tick(const Target& target, float dt)
 	auto closingVel = glm::dot(m_CurrLOS, velDelta);
 
 	// 4) Use PN formula to find correction acceleration needed.
-	const float N = 2.0f;
-	auto corrAccel = N * closingVel * rocLOSA;
+	const auto Aggresiveness = 1.0f; // todo: >1 is unstable, try Runge-Kutta integration.
+	auto corrAccel = Aggresiveness * closingVel * rocLOSA;
 	
 	auto accUnitVec = glm::cross(glm::vec3(m_Vel.x, m_Vel.y, 0.0f), { 0,0,1 });
 	auto sign = std::sinf(glm::angle(m_Vel, m_CurrLOS));

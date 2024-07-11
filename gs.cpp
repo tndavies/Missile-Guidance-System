@@ -27,7 +27,7 @@ void GuidanceSystem::draw(SDL_Renderer* r)
 	const auto A = m_FrustumA;
 	const auto B = m_FrustumB;
 	
-	SDL_SetRenderDrawColor(r, 0xff, 0xff, 0xff, 0xff);
+	SDL_SetRenderDrawColor(r, 0, 0, 0, 0xff);
 	SDL_RenderDrawLineF(r, m_X, m_Y, A.x, A.y);
 	SDL_RenderDrawLineF(r, m_X, m_Y, B.x, B.y);
 	SDL_RenderDrawLineF(r, A.x, A.y, B.x, B.y);
