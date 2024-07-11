@@ -17,7 +17,7 @@ private:
 	glm::vec2 m_Pos;
 	glm::vec2 m_InitialLOS;
 	glm::vec2 m_CurrLOS;
-	glm::vec2 m_Vel;
+	glm::vec2 m_Vel, m_Acc;
 	float m_Speed;
 	float m_prevLOSA;
 };

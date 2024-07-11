@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     bool tick_simulation = true;
     auto t0 = SDL_GetTicks();
     
-    const auto msDeltaTime = 16.0f;
+    const auto msDeltaTime = 5.0f;
 
     while (!quit) {
         while (SDL_PollEvent(&e) != 0) {

@@ -19,7 +19,8 @@ Missile::Missile(glm::vec2 target, float speed) :
 	m_CurrLOS = m_InitialLOS;
 	m_prevLOSA = 0.0f;
 	
-	m_Vel = m_InitialLOS * 25.0f;
+	m_Vel = m_InitialLOS * 60.0f;
+	m_Acc = { 0.0f, 0.0f };
 }
 
 void Missile::tick(const Target& target, float dt)
@@ -30,7 +31,6 @@ void Missile::tick(const Target& target, float dt)
 	m_CurrLOS = calc_trajectory(m_Pos, tpos);
 	float currLOSA = glm::angle(m_InitialLOS, m_CurrLOS);
 
-#if 0
 	// 2) Calc temporal ROC of LOS angle.
 	float rocLOSA = (currLOSA - m_prevLOSA) / dt;
 	m_prevLOSA = currLOSA;
@@ -43,16 +43,16 @@ void Missile::tick(const Target& target, float dt)
 	const float N = 2.0f;
 	auto corrAccel = N * closingVel * rocLOSA;
 	
+	auto accUnitVec = glm::cross(glm::vec3(m_Vel.x, m_Vel.y, 0.0f), { 0,0,1 });
 	auto sign = std::sinf(glm::angle(m_Vel, m_CurrLOS));
-	const glm::vec3 Zaxis = { 0.0f, 0.0f, 1.0f };
-	auto accUnitVec = glm::cross(glm::vec3(m_Vel.x, m_Vel.y, 0.0f), Zaxis);
+	std::cout << glm::degrees(sign) << std::endl;
 	if (sign > 0.0f) accUnitVec = -accUnitVec;
 	
-	glm::vec2 a = glm::vec2(accUnitVec.x, accUnitVec.y) * corrAccel;
+	m_Acc = glm::vec2(accUnitVec.x, accUnitVec.y) * corrAccel;
 
 	// 5) Adjust missile velocity vector.
-	m_Vel += a * dt;
-#endif
+	m_Vel += m_Acc * dt;
+	
 	// 6) Move missile according to velocity.
 	m_Pos += m_Vel * dt;
 }
@@ -65,13 +65,16 @@ void Missile::draw(SDL_Renderer* r)
 	SDL_SetRenderDrawColor(r, 0, 0, 0, 0xff);
 	SDL_RenderFillRectF(r, &visual);
 
-	const auto gspos = GStoSDL(glm::vec2(0, 0));
-	const auto velpos = GStoSDL(m_InitialLOS * 60.0f);
-	const auto LOS = GStoSDL(m_CurrLOS * 75.0f);
 
-	SDL_SetRenderDrawColor(r, 0, 0xff, 0, 0xff);
-	SDL_RenderDrawLineF(r, gspos.x, gspos.y, velpos.x, velpos.y);
-
+	const auto LOS = m_CurrLOS * 30.0f;
 	SDL_SetRenderDrawColor(r, 0, 100, 255, 0xff);
-	SDL_RenderDrawLineF(r, gspos.x, gspos.y, LOS.x, LOS.y);
+	SDL_RenderDrawLineF(r, mpos.x, mpos.y, mpos.x + LOS.x, mpos.y - LOS.y);
+
+	const auto vpos = glm::normalize(m_Vel) * 45.0f;
+	SDL_SetRenderDrawColor(r, 0, 200, 0, 0xff);
+	SDL_RenderDrawLineF(r, mpos.x, mpos.y, mpos.x + vpos.x, mpos.y - vpos.y);
+
+	const auto apos = m_Acc;
+	SDL_SetRenderDrawColor(r, 255, 0, 0, 0xff);
+	SDL_RenderDrawLineF(r, mpos.x, mpos.y, mpos.x + apos.x, mpos.y - apos.y);
 }
