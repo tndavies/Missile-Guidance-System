@@ -18,6 +18,8 @@ Missile::Missile(glm::vec2 target, float speed) :
 	m_InitialLOS = calc_trajectory(m_Pos, target);
 	m_CurrLOS = m_InitialLOS;
 	m_prevLOSA = 0.0f;
+	
+	m_Vel = m_InitialLOS * 25.0f;
 }
 
 void Missile::tick(const Target& target, float dt)
@@ -33,13 +35,22 @@ void Missile::tick(const Target& target, float dt)
 	m_prevLOSA = currLOSA;
 	
 	// 3) Find missile velocity upon target
-	auto vRel = velocity() - target.velocity();
-	
-	
+	auto velDelta = velocity() - target.velocity();
+	auto closingVel = glm::dot(m_CurrLOS, velDelta);
+
 	// 4) Use PN formula to find correction acceleration needed.
-	// 5) Adjust missile velocity accordingly.
+	const float N = 1.0f;
+	auto corrAccel = N * closingVel * rocLOSA;
+	
+	auto sign = std::sinf(glm::angle(m_Vel, m_CurrLOS));
+	const glm::vec3 Zaxis = { 0.0f, 0.0f, 1.0f };
+	auto accUnitVec = glm::cross(glm::vec3(m_Vel.x, m_Vel.y, 0.0f), Zaxis);
+	if (sign > 0.0f) accUnitVec = -accUnitVec;
+	
+	glm::vec2 a = glm::vec2(accUnitVec.x, accUnitVec.y) * corrAccel;
 
-
+	// 5) Adjust missile velocity vector.
+	m_Vel += a * dt;
 }
 
 void Missile::draw(SDL_Renderer* r)
