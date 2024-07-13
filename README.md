@@ -5,6 +5,3 @@ Proportional Navigation (PN) is the primary algorithm used in air target missile
 (see https://en.wikipedia.org/wiki/Proportional_navigation for more on PN algorithm)
 
 https://github.com/tndavies/Missile-Guidance-System/assets/16738108/1eaea002-f62e-434a-8033-939d8b16ca0c
-
-## Build instructions
-(TODO)
