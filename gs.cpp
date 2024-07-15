@@ -3,7 +3,8 @@
 #include <gs.h>
 
 GuidanceSystem::GuidanceSystem(const glm::vec2& pos, float range, float fov) 
-	: m_Pos(toSimSpace(pos)), m_Range(range), m_FOV(fov), m_TargetRegistered(false)
+	: m_Pos(toSimSpace(pos)), m_Range(range), m_FOV(fov), 
+	m_TargetRegistered(false), m_Missile(nullptr), m_Size(15.0f)
 {
 	// Calculate top-left & top-right points of view frustum, 
 	// from specified view range & FOV.

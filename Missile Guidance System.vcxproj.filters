@@ -24,6 +24,12 @@
     <ClCompile Include="gs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="coords.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="missile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="target.h">
@@ -32,7 +38,10 @@
     <ClInclude Include="gs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vec2.h">
+    <ClInclude Include="coords.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="missile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

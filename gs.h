@@ -25,17 +25,15 @@ public:
 	bool TargetVisible(const glm::vec2& targetPos);
 
 private:
-	const float m_Size = 15.0f;
+	const float m_Size;
 
-	// in SDL coords.
 	glm::vec2 m_Pos;
 	glm::vec2 m_FrustumTopLeft;
 	glm::vec2 m_FrustumTopRight;
-	
 	float m_Range;
 	float m_FOV;
 
 	bool m_TargetRegistered;
 
-	Missile* m_Missile = nullptr;
+	Missile* m_Missile;
 };
