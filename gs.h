@@ -8,36 +8,34 @@
 
 class GuidanceSystem {
 public:
-	GuidanceSystem(float x, float y, float range, float fov);
+	GuidanceSystem(const glm::vec2& pos, float range, float fov);
 	~GuidanceSystem() {}
 
 	void tick(Target& target, float dt);
 
 	auto getSize() const { return m_Size; }
-	auto getX() const { return m_X; }
-	auto getY() const { return m_Y; }
+	auto getPos() const { return m_Pos; }
 	auto getRange() const { return m_Range; }
 	auto getFOV() const { return m_FOV; }
-	auto getA() const { return m_FrustumA; }
-	auto getB() const { return m_FrustumB; }
-	auto getMissile() const { return m_ActiveMissile; }
+	auto getA() const { return m_FrustumTopLeft; }
+	auto getB() const { return m_FrustumTopRight; }
+	auto getMissile() const { return m_Missile; }
 
 	void draw(SDL_Renderer* r);
-	bool TargetVisible(float tx, float ty);
+	bool TargetVisible(const glm::vec2& targetPos);
 
 private:
 	const float m_Size = 15.0f;
 
 	// in SDL coords.
-	float m_X, m_Y;
-	glm::vec2 m_FrustumA;
-	glm::vec2 m_FrustumB;
+	glm::vec2 m_Pos;
+	glm::vec2 m_FrustumTopLeft;
+	glm::vec2 m_FrustumTopRight;
 	
 	float m_Range;
 	float m_FOV;
 
+	bool m_TargetRegistered;
 
-	bool m_ThreatDetected;
-
-	Missile* m_ActiveMissile = nullptr;
+	Missile* m_Missile = nullptr;
 };

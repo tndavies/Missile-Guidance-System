@@ -1,74 +1,82 @@
-#include "gs.h"
-#include <cmath>
 #include <coords.h>
-#include <iostream>
+#include <cmath>
+#include <gs.h>
 
-#define Radians(x) (0.01745329251994329576924 * x) 
-
-GuidanceSystem::GuidanceSystem(float x, float y, float range, float fov) 
-	: m_X(x), m_Y(y), m_Range(range), m_FOV(fov), m_ThreatDetected(false)
+GuidanceSystem::GuidanceSystem(const glm::vec2& pos, float range, float fov) 
+	: m_Pos(toSimSpace(pos)), m_Range(range), m_FOV(fov), m_TargetRegistered(false)
 {
-	const float alpha = 0.5f * Radians(m_FOV);
+	// Calculate top-left & top-right points of view frustum, 
+	// from specified view range & FOV.
+	const float alpha = glm::radians(m_FOV) / 2.0f;
 	const float dx = m_Range * std::sinf(alpha);
 	const float dy = m_Range * std::cosf(alpha);
 
-	m_FrustumA.x = m_X - dx;
-	m_FrustumA.y = m_Y - dy;
-
-	m_FrustumB.x = m_X + dx;
-	m_FrustumB.y = m_Y - dy;
+	// note: Calculation is done in SDL space!
+	m_FrustumTopLeft.x = pos.x - dx;
+	m_FrustumTopLeft.y = pos.y - dy;
+	m_FrustumTopRight.x = pos.x + dx;
+	m_FrustumTopRight.y = pos.y - dy;
 }
 
 void GuidanceSystem::draw(SDL_Renderer* r) 
 {
-	const auto A = m_FrustumA;
-	const auto B = m_FrustumB;
-	
-	if (m_ThreatDetected) SDL_SetRenderDrawColor(r, 255, 0, 0, 0xff);
-	else SDL_SetRenderDrawColor(r, 0, 0, 0, 0xff);
-	SDL_RenderDrawLineF(r, m_X, m_Y, A.x, A.y);
-	SDL_RenderDrawLineF(r, m_X, m_Y, B.x, B.y);
+	const auto pos = toSDLSpace(m_Pos);
+	const auto A = m_FrustumTopLeft;
+	const auto B = m_FrustumTopRight;
+
+	// Colour frustum outline red if target is visible,
+	// black otherwise.
+	const uint8_t RedChannel = m_TargetRegistered ? 0xff : 0x00;
+	SDL_SetRenderDrawColor(r, RedChannel, 0, 0, 0xff);
+
+	// Draw frustum outline.
+	SDL_RenderDrawLineF(r, pos.x, pos.y, A.x, A.y);
+	SDL_RenderDrawLineF(r, pos.x, pos.y, B.x, B.y);
 	SDL_RenderDrawLineF(r, A.x, A.y, B.x, B.y);
 
-	SDL_Rect visual = { m_X - 0.5f * m_Size, m_Y - m_Size, m_Size, m_Size };
+	// Draw Guidance-system square.
+	SDL_Rect visual = { pos.x - 0.5f * m_Size, pos.y - m_Size, m_Size, m_Size };
 	SDL_SetRenderDrawColor(r, 0, 0, 0, 0xff);
 	SDL_RenderFillRect(r, &visual);
 
-	if (m_ActiveMissile) m_ActiveMissile->draw(r);
+	if (m_Missile) {
+		m_Missile->draw(r);
+	}
 }
 
 void GuidanceSystem::tick(Target& target, float dt)
 {
-	const auto tpos = target.getPos();
-	bool visible = TargetVisible(tpos.x, tpos.y);
-	if (visible && !m_ThreatDetected) {
-		m_ThreatDetected = true;
-		
-		const auto tpos = SDLtoGS(target.getPos());
-		m_ActiveMissile = new Missile(tpos, target.getSpeed() * 2.5f);
+	// Detect target when it enters the GS's visible region.
+	bool targetVisible = TargetVisible(target.getPos());
+	if (targetVisible && !m_TargetRegistered) {
+		const auto missileSpeed = 2.5f * target.getSpeed();
+		m_Missile = new Missile(target.getPos(), missileSpeed);
+
+		m_TargetRegistered = true;
 	}
 
-	if (m_ActiveMissile) {
-		m_ActiveMissile->tick(target, dt);
+	if (m_Missile) {
+		m_Missile->tick(target, dt);
 
-		const auto tpos = SDLtoGS(target.getPos());
-		const auto missileLOS = m_ActiveMissile->calcLOS(tpos);
-		if (glm::length(missileLOS) <= target.getSize()) { // missile hit!
-			delete m_ActiveMissile;
-			m_ThreatDetected = false;
+		// Detect when the missile successfully strikes the target.
+		const auto separationVec = m_Missile->calcLOS(target.getPos());
+		if (glm::length(separationVec) <= target.getSize()) {
+			m_TargetRegistered = false;
+			delete m_Missile;
 			target.reset();
 		}
 	}
 }
 
-// Uses barycentric coordinates to test if the target is
-// within the view frustum of the guidance system's sensors.
-bool GuidanceSystem::TargetVisible(float tx, float ty)
+// Performs a point-in-triangle test to check if the target 
+// is within the view frustum of the guidance system.
+// (perfomed in SDL space)
+bool GuidanceSystem::TargetVisible(const glm::vec2& targetPos)
 {
-	glm::vec2 P(tx, ty);
-	glm::vec2 G(m_X, m_Y);
-	glm::vec2 A = m_FrustumA;
-	glm::vec2 B = m_FrustumB;
+	glm::vec2 P = toSDLSpace(targetPos);
+	glm::vec2 G = toSDLSpace(m_Pos);
+	glm::vec2 A = m_FrustumTopLeft;
+	glm::vec2 B = m_FrustumTopRight;
 
 	glm::vec2 v0 = G - A;
 	glm::vec2 v1 = B - A;

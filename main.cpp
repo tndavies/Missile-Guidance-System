@@ -5,29 +5,23 @@
 #include <glm/glm.hpp>
 #include <coords.h>
 
-glm::vec2 SDLtoGS(glm::vec2 sdl) {
-    const auto GSx = sdl.x - FrameWidth * 0.5f;
-    const auto GSy = FrameHeight - sdl.y;
-    return glm::vec2(GSx, GSy);
-}
+extern const size_t FrameWidth = 1200;
+extern const size_t FrameHeight = 640;
 
-glm::vec2 GStoSDL(glm::vec2 gs) {
-    const auto SDLx = gs.x + FrameWidth * 0.5f;
-    const auto SDLy = FrameHeight - gs.y;
-    return glm::vec2(SDLx, SDLy);
-}
+void tickSim(GuidanceSystem& gs, Target& target, float dt);
 
 int main(int argc, char* argv[]) 
 {
-    const uint16_t FramebufferWidth = 1200;
-    const uint16_t FramebufferHeight= 640;
+    const float tickPeriod = 5.0f;  // Time delay between simulation updates (ms).
+    const float dt = tickPeriod / 1000.0f;  // Simulation timestep (s)
 
+    // Setup SDL window and rendering context.
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         return -1;
     }
 
     SDL_Window* window = SDL_CreateWindow("Missile Guidance System", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-        FramebufferWidth, FramebufferHeight, SDL_WINDOW_SHOWN);
+        FrameWidth, FrameHeight, SDL_WINDOW_SHOWN);
     if (!window) {
         SDL_Quit();
         return -1;
@@ -37,19 +31,26 @@ int main(int argc, char* argv[])
     if (!r) {
         SDL_DestroyWindow(window);
         SDL_Quit();
-        return 1;
+        return -1;
     }
 
-    GuidanceSystem gs(0.5f * FramebufferWidth, FramebufferHeight, 700.0f, 60);
-    Target target(glm::vec2(250, 200), 15);
+    // Setup Guidance-system parameters.
+    const glm::vec2 gsPosition(FrameWidth / 2.0f, FrameHeight); // SDL coordinate space.
+    const float gsRange = 700.0f;
+    const float gsFOV = 60.0f;
+    GuidanceSystem gs(gsPosition, gsRange, gsFOV);
 
+    // Setup target parameters.
+    const glm::vec2 targetPos(250, 200); // SDL coordinate space.
+    const float targetSize = 15.0f; // pixels.
+    Target target(targetPos, targetSize);
+
+    // Application Loop ...
     SDL_Event e;
     bool quit = false;
-    bool tick_simulation = true;
+    bool allowTick = true;
     auto t0 = SDL_GetTicks();
     
-    const auto msDeltaTime = 5;
-
     while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
@@ -57,27 +58,24 @@ int main(int argc, char* argv[])
             }
         }
     
-        if (tick_simulation) {
-            const auto dt = msDeltaTime / 1000.0f; // time-step in seconds.
-            
-            target.tick(dt);
-            gs.tick(target, dt);
-
-            tick_simulation = false;
+        // Update simulation.
+        if (allowTick) { 
+            tickSim(gs, target, dt);
+            allowTick = false;
         }
 
-        // Rendering ...
+        // Render the frame.
         SDL_SetRenderDrawColor(r, 255, 255, 255, 0xff);
         SDL_RenderClear(r);
         target.draw(r);
         gs.draw(r);
-
         SDL_RenderPresent(r);
 
-        const auto dt = SDL_GetTicks() - t0;
-        if (dt >= msDeltaTime) {
+        // Manage simulation update rate.
+        const auto elapsedTime = SDL_GetTicks() - t0;
+        if (elapsedTime >= tickPeriod) {
             t0 = SDL_GetTicks();
-            tick_simulation = true;
+            allowTick = true;
         }
     }
 
@@ -86,4 +84,10 @@ int main(int argc, char* argv[])
     SDL_Quit();
 
 	return 0;
+}
+
+void tickSim(GuidanceSystem& gs, Target& target, float dt)
+{
+    target.tick(dt);
+    gs.tick(target, dt);
 }

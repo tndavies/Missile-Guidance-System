@@ -1,26 +1,23 @@
 #pragma once
+
 #include <glm/glm.hpp>
 #include <SDL/SDL.h>
-#include <array>
 #include <target.h>
+#include <array>
 
 class Missile
 {
 public:
 	Missile(glm::vec2 target, float speed);
 
-	glm::vec2 velocity() const { return m_Vel; }
+	glm::vec2 calcLOS(glm::vec2 target);
 	void tick(const Target& target, float dt);
 	void draw(SDL_Renderer* r);
 
-	glm::vec2 calcLOSnorm(glm::vec2 target);
-	glm::vec2 calcLOS(glm::vec2 target);
+	glm::vec2 getVelocity() const { return m_Vel; }
 
 private:
-
-	glm::vec2 m_Pos;
-	glm::vec2 m_InitialLOS;
-	glm::vec2 m_LOS;
-	glm::vec2 m_Vel, m_Acc;
+	glm::vec2 m_Pos, m_Vel, m_Acc;
+	glm::vec2 m_InitialLOS, m_LOS;
 	float m_prevLOSAngle;
 };
